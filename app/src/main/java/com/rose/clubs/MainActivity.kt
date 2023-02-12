@@ -81,6 +81,12 @@ fun ClubApplication() {
             Log.i(TAG, "ClubApplication: navigated to club details $clubId")
             ClubDetailsScreen(navController, clubId, clubsViewModel)
         }
+        composable("add_match/{club_id}", listOf(navArgument("club_id") {
+            type = NavType.StringType
+        })) { navEntry ->
+            val clubId = navEntry.arguments?.getString("club_id") ?: ""
+            AddMatchScreen(navController = navController, clubId = clubId)
+        }
         composable("notifications/club/{club_id}", listOf(navArgument("club_id") {
             type = NavType.StringType
         })) { navEntry ->

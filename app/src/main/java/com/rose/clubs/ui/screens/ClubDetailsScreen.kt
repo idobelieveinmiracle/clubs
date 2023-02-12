@@ -95,6 +95,7 @@ fun ClubDetailsScreen(
                         when (actionType) {
                             ActionType.ASK_TO_JOIN -> viewModel.askToJoin()
                             ActionType.CANCEL_ASK -> viewModel.cancelAsk()
+                            ActionType.ADD_MATCH -> navController?.navigate("add_match/$clubId")
                             else -> Unit
                         }
                     },

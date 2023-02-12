@@ -3,10 +3,8 @@ package com.rose.clubs.models.firebase
 import android.util.Log
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.*
-import com.rose.clubs.data.Club
-import com.rose.clubs.data.Player
-import com.rose.clubs.data.Role
-import com.rose.clubs.data.User
+import com.rose.clubs.data.*
+import com.rose.clubs.viewmodels.addmatch.SaveMatchResult
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -22,6 +20,10 @@ fun FirebaseFirestore.getUsersCollection(): CollectionReference {
 
 fun FirebaseFirestore.getPlayersCollection(): CollectionReference {
     return collection("Players")
+}
+
+fun FirebaseFirestore.getMatchesCollection(): CollectionReference {
+    return collection("Matches")
 }
 
 fun FirebaseUser.getUser(): User {
@@ -162,5 +164,25 @@ suspend fun FirebaseFirestore.deletePlayer(
         .addOnCompleteListener { result ->
             Log.i(TAG, "deletePlayer: ${result.exception}")
             continuation.resume(result.isSuccessful)
+        }
+}
+
+suspend fun FirebaseFirestore.saveMatch(
+    clubId: String,
+    match: Match
+): SaveMatchResult = suspendCoroutine { continuation ->
+    getMatchesCollection()
+        .add(hashMapOf(
+            "clubId" to clubId,
+            "location" to match.location,
+            "time" to match.time,
+            "cost" to match.cost
+        )).addOnCompleteListener { res ->
+            if (res.isSuccessful) {
+                continuation.resume(SaveMatchResult.Success)
+            } else {
+                Log.e(TAG, "saveMatch: ", res.exception)
+                continuation.resume(SaveMatchResult.Failed("Save error!"))
+            }
         }
 }
