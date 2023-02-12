@@ -1,6 +1,5 @@
 package com.rose.clubs.ui.screens
 
-import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.util.Log
@@ -27,11 +26,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.rose.clubs.models.firebase.FirebaseAddMatchModel
+import com.rose.clubs.ui.screens.commons.getTimeFormatted
 import com.rose.clubs.viewmodels.addmatch.AddMatchViewModel
 import com.rose.clubs.viewmodels.main.MainViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
 import java.util.*
 
 private const val TAG = "AddMatchScreen"
@@ -64,7 +63,7 @@ fun AddMatchScreen(
         launch {
             viewModel.saved.collectLatest {
                 if (it) {
-                    mainViewModel.triggerReload("club_details")
+                    mainViewModel.triggerReload("club_details:matches")
                     Log.i(TAG, "AddMatchScreen: saved")
                     navController?.navigateUp()
                 }
@@ -192,12 +191,6 @@ private fun AddMatchView(
             }
         }
     }
-}
-
-@SuppressLint("SimpleDateFormat")
-private fun getTimeFormatted(time: Long): String {
-    val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm")
-    return formatter.format(Date(time))
 }
 
 @Composable

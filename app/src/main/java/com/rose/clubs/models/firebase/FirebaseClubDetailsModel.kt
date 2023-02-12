@@ -6,10 +6,7 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
-import com.rose.clubs.data.Club
-import com.rose.clubs.data.Player
-import com.rose.clubs.data.Role
-import com.rose.clubs.data.User
+import com.rose.clubs.data.*
 import com.rose.clubs.viewmodels.clubdetails.ActionType
 import com.rose.clubs.viewmodels.clubdetails.ClubDetailsModel
 import kotlinx.coroutines.Dispatchers
@@ -45,6 +42,12 @@ class FirebaseClubDetailsModel(
                 user = usersMap.getOrDefault(player.user.userId, player.user)
             )
         }
+    }
+
+    override suspend fun loadMatches(
+        clubId: String
+    ): List<Match> {
+        return firestore.loadMatches(clubId)
     }
 
     override suspend fun askToJoin(clubId: String): Boolean {

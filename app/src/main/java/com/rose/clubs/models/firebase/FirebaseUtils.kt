@@ -65,6 +65,16 @@ fun QueryDocumentSnapshot.toPlayer(
     )
 }
 
+fun QueryDocumentSnapshot.toMatch(): Match {
+    return Match(
+        id,
+        data["location"]?.toString() ?: "",
+        (data["time"]?.toString() ?: "-1").toLong(),
+        (data["cost"]?.toString() ?: "0").toInt(),
+        emptyList()
+    )
+}
+
 fun DocumentSnapshot.toClub(): Club {
     return Club(
         id,
@@ -184,5 +194,19 @@ suspend fun FirebaseFirestore.saveMatch(
                 Log.e(TAG, "saveMatch: ", res.exception)
                 continuation.resume(SaveMatchResult.Failed("Save error!"))
             }
+        }
+}
+
+suspend fun FirebaseFirestore.loadMatches(
+    clubId: String
+): List<Match> = suspendCoroutine { continuation ->
+    getMatchesCollection()
+        .whereEqualTo("clubId", clubId)
+        .get()
+        .addOnSuccessListener { docs ->
+            continuation.resume(docs.map { it.toMatch() })
+        }.addOnFailureListener { e ->
+            Log.e(TAG, "loadMatches: ", e)
+            continuation.resume(emptyList())
         }
 }

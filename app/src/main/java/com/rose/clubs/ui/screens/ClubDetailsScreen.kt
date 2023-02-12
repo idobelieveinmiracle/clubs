@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -15,17 +16,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.rose.clubs.data.Club
+import com.rose.clubs.data.Match
 import com.rose.clubs.data.Player
 import com.rose.clubs.models.firebase.FirebaseClubDetailsModel
 import com.rose.clubs.ui.screens.commons.AppTopBar
 import com.rose.clubs.ui.screens.commons.PlayerCard
 import com.rose.clubs.ui.screens.commons.asyncCollect
+import com.rose.clubs.ui.screens.commons.getTimeFormatted
 import com.rose.clubs.viewmodels.clubdetails.ActionType
 import com.rose.clubs.viewmodels.clubdetails.ClubDetailsViewModel
 import com.rose.clubs.viewmodels.clublist.ClubsListViewModel
@@ -50,6 +55,7 @@ fun ClubDetailsScreen(
 
     val club by viewModel.club.collectAsState()
     val players by viewModel.players.collectAsState()
+    val matches by viewModel.matches.collectAsState()
     val actionType by viewModel.actionType.collectAsState()
 
     val hostState = remember { SnackbarHostState() }
@@ -73,8 +79,8 @@ fun ClubDetailsScreen(
         Log.i(TAG, "ClubDetailsScreen: init reload state ${mainViewModel.reloadMap}")
         mainViewModel.reloadMap.asyncCollect(this) { map ->
             Log.i(TAG, "ClubDetailsScreen: reload state changed $map")
-            if (map.getOrDefault("club_details", false)) {
-                clubsListViewModel.reloadMyClubs()
+            if (map.getOrDefault("club_details:matches", false)) {
+                viewModel.reloadMatches()
                 mainViewModel.markReloaded("club_details")
             }
         }
@@ -130,7 +136,8 @@ fun ClubDetailsScreen(
                 .fillMaxSize()
                 .padding(scaffoldPadding),
             club = club,
-            players = players
+            players = players,
+            matches = matches
         )
     }
 }
@@ -139,7 +146,8 @@ fun ClubDetailsScreen(
 private fun ClubDetailsView(
     modifier: Modifier = Modifier,
     club: Club?,
-    players: List<Player>
+    players: List<Player>,
+    matches: List<Match>
 ) {
     Surface(
         modifier = modifier
@@ -174,9 +182,11 @@ private fun ClubDetailsView(
                     )
                 }
             }
+
             item {
                 Spacer(modifier = Modifier.height(10.dp))
             }
+
             item {
                 Text(
                     text = "Players (${players.size})",
@@ -188,6 +198,63 @@ private fun ClubDetailsView(
             items(players) { player ->
                 PlayerCard(player = player)
             }
+
+            item {
+                Spacer(modifier = Modifier.height(5.dp))
+            }
+
+            if (matches.isNotEmpty()) {
+                item {
+                    Text(
+                        text = "Matches (${matches.size})",
+                        modifier = Modifier.padding(horizontal = 14.dp),
+                        style = MaterialTheme.typography.subtitle2
+                    )
+                }
+                item { Spacer(modifier = Modifier.height(7.dp)) }
+                items(matches) { match ->
+                    MatchCard(match = match)
+                }
+            }
+
+        }
+    }
+}
+
+@Composable
+private fun MatchCard(match: Match) {
+    Card(
+        shape = RoundedCornerShape(8.dp),
+        elevation = 2.dp,
+        modifier = Modifier
+            .padding(bottom = 10.dp)
+            .fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(10.dp)
+        ) {
+            Text(match.location, style = MaterialTheme.typography.h6, maxLines = 1)
+            Spacer(modifier = Modifier.height(3.dp))
+            CompositionLocalProvider(LocalContentAlpha provides ContentAlpha.medium) {
+                Text(
+                    text = "Time: ${getTimeFormatted(match.time)}",
+                    textAlign = TextAlign.Start,
+                    style = MaterialTheme.typography.subtitle2,
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 2
+                )
+            }
+            Spacer(modifier = Modifier.height(3.dp))
+            CompositionLocalProvider(LocalContentAlpha provides ContentAlpha.medium) {
+                Text(
+                    text = "Cost: ${match.cost}",
+                    textAlign = TextAlign.Start,
+                    style = MaterialTheme.typography.subtitle2,
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 2
+                )
+            }
         }
     }
 }
@@ -198,6 +265,7 @@ fun ClubDetailsPreview() {
     ClubDetailsView(
         modifier = Modifier.fillMaxSize(),
         club = Club("", "Miami heat", ""),
-        players = emptyList()
+        players = emptyList(),
+        matches = emptyList()
     )
 }
