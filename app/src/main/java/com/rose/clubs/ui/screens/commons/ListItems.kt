@@ -66,7 +66,11 @@ fun PlayerCard(player: Player, onClick: () -> Unit) {
         modifier = Modifier
             .padding(bottom = 10.dp)
             .fillMaxWidth()
-            .clickable { onClick() }
+            .clickable {
+                if (player.playerId.isNotEmpty()) {
+                    onClick()
+                }
+            }
     ) {
         Row {
             AsyncImage(
@@ -87,7 +91,7 @@ fun PlayerCard(player: Player, onClick: () -> Unit) {
                 Spacer(modifier = Modifier.height(3.dp))
                 CompositionLocalProvider(LocalContentAlpha provides ContentAlpha.medium) {
                     Text(
-                        text = "Number: ${player.number}, Balance: ${player.balance}K",
+                        text = "Number: ${player.number}",
                         textAlign = TextAlign.Start,
                         style = MaterialTheme.typography.subtitle2,
                         overflow = TextOverflow.Ellipsis,

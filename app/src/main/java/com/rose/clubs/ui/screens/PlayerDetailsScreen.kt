@@ -64,7 +64,7 @@ fun PlayerDetailsScreen(
                         hostState.showSnackbar("Kicked player")
                     }
                     delay(300)
-                    mainViewModel.triggerReload("club_details:players")
+                    mainViewModel.triggerReload("club_details:players&matches")
                     navController?.navigateUp()
                 }
             }

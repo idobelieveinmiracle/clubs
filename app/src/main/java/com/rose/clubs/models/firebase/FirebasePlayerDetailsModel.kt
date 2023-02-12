@@ -11,7 +11,6 @@ import com.rose.clubs.data.Role
 import com.rose.clubs.viewmodels.playerdetails.PlayerDetailModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -83,13 +82,7 @@ class FirebasePlayerDetailsModel(
         }
     }
 
-    override suspend fun kickPlayer(playerId: String): Boolean = withContext(Dispatchers.IO) {
-        firestore.getPlayerSkipCostPerMatches(playerId)
-            .map { pair ->
-                async {
-                    firestore.updateMatchCost(pair.first, pair.second)
-                }
-            }.awaitAll()
-        firestore.deletePlayer(playerId)
+    override suspend fun kickPlayer(playerId: String): Boolean {
+        return firestore.deletePlayer(playerId)
     }
 }

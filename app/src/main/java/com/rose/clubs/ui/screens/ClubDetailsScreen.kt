@@ -88,6 +88,11 @@ fun ClubDetailsScreen(
                 viewModel.reloadPlayers()
                 mainViewModel.markReloaded("club_details:players")
             }
+            if (map.getOrDefault("club_details:players&matches", false)) {
+                viewModel.reloadPlayers()
+                viewModel.reloadMatches()
+                mainViewModel.markReloaded("club_details:players&matches")
+            }
         }
     }
 
