@@ -1,0 +1,69 @@
+{
+  "project_info": {
+    "project_number": "932386425073",
+    "firebase_url": "https://football-1e924-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "football-1e924",
+    "storage_bucket": "football-1e924.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:932386425073:android:f77cedf8e57980bffec150",
+        "android_client_info": {
+          "package_name": "com.rose.clubs"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "932386425073-msd33am26phft86ftsnpk2emr4m0o6f5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBvAHyq3OJiG7hOOVUvHL8DZcIfICQAn2o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "932386425073-msd33am26phft86ftsnpk2emr4m0o6f5.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:932386425073:android:c4c22442b0585d18fec150",
+        "android_client_info": {
+          "package_name": "com.rose.footballclubmanagement"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "932386425073-msd33am26phft86ftsnpk2emr4m0o6f5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBvAHyq3OJiG7hOOVUvHL8DZcIfICQAn2o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "932386425073-msd33am26phft86ftsnpk2emr4m0o6f5.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
