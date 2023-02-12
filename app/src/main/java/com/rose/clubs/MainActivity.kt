@@ -96,6 +96,12 @@ fun ClubApplication() {
                 model = FirebaseClubNotificationsModel(clubId)
             )
         }
+        composable("match_details/{match_id}", listOf(navArgument("match_id") {
+            type = NavType.StringType
+        })) { navEntry ->
+            val matchId = navEntry.arguments?.getString("match_id") ?: ""
+            MatchDetails(navController = navController, matchId = matchId)
+        }
         composable("loading") {
             LoadingUserInfoScreen()
         }

@@ -32,16 +32,22 @@ class ClubDetailsViewModel(
 
     init {
         viewModelScope.launch {
-            val club = clubDetailsModel.loadClubData(clubId)
-            if (club == null) {
-                _errorMessage.emit("Error when load club")
+            launch {
+                val club = clubDetailsModel.loadClubData(clubId)
+                if (club == null) {
+                    _errorMessage.emit("Error when load club")
+                }
+                _club.value = club
+                Log.i(TAG, "init: club id = ${club?.clubId}")
             }
-            _club.value = club
-            val loadedPlayers = clubDetailsModel.loadPlayers(clubId)
-            _players.value = loadedPlayers
-            _actionType.value = clubDetailsModel.getActionType(clubId, loadedPlayers)
-            _matches.value = clubDetailsModel.loadMatches(clubId)
-            Log.i(TAG, "init: club id = ${club?.clubId}")
+            launch {
+                val loadedPlayers = clubDetailsModel.loadPlayers(clubId)
+                _players.value = loadedPlayers
+                _actionType.value = clubDetailsModel.getActionType(clubId, loadedPlayers)
+            }
+            launch {
+                _matches.value = clubDetailsModel.loadMatches(clubId)
+            }
         }
     }
 

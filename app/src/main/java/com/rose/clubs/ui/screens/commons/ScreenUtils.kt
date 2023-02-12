@@ -18,6 +18,9 @@ fun <T> SharedFlow<T>.asyncCollect(scope: CoroutineScope, onCollected: (T) -> Un
 
 @SuppressLint("SimpleDateFormat")
 fun getTimeFormatted(time: Long): String {
+    if (time == -1L) {
+        return "No time"
+    }
     val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm")
     return formatter.format(Date(time))
 }

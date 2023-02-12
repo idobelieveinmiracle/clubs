@@ -1,6 +1,7 @@
 package com.rose.clubs.ui.screens
 
 import android.util.Log
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -137,7 +138,9 @@ fun ClubDetailsScreen(
                 .padding(scaffoldPadding),
             club = club,
             players = players,
-            matches = matches
+            matches = matches,
+            onPlayerSelected = { playerId ->  },
+            onMatchSelected = { matchId -> navController?.navigate("match_details/$matchId") }
         )
     }
 }
@@ -147,7 +150,9 @@ private fun ClubDetailsView(
     modifier: Modifier = Modifier,
     club: Club?,
     players: List<Player>,
-    matches: List<Match>
+    matches: List<Match>,
+    onPlayerSelected: (playerId: String) -> Unit,
+    onMatchSelected: (matchId: String) -> Unit
 ) {
     Surface(
         modifier = modifier
@@ -213,7 +218,9 @@ private fun ClubDetailsView(
                 }
                 item { Spacer(modifier = Modifier.height(7.dp)) }
                 items(matches) { match ->
-                    MatchCard(match = match)
+                    MatchCard(match = match) {
+                        onMatchSelected(match.matchId)
+                    }
                 }
             }
 
@@ -222,11 +229,15 @@ private fun ClubDetailsView(
 }
 
 @Composable
-private fun MatchCard(match: Match) {
+private fun MatchCard(
+    match: Match,
+    onSelected: () -> Unit
+) {
     Card(
         shape = RoundedCornerShape(8.dp),
         elevation = 2.dp,
         modifier = Modifier
+            .clickable { onSelected() }
             .padding(bottom = 10.dp)
             .fillMaxWidth()
     ) {
@@ -266,6 +277,8 @@ fun ClubDetailsPreview() {
         modifier = Modifier.fillMaxSize(),
         club = Club("", "Miami heat", ""),
         players = emptyList(),
-        matches = emptyList()
+        matches = emptyList(),
+        onPlayerSelected = { },
+        onMatchSelected = { }
     )
 }

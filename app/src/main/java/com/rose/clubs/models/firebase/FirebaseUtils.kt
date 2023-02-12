@@ -210,3 +210,75 @@ suspend fun FirebaseFirestore.loadMatches(
             continuation.resume(emptyList())
         }
 }
+
+suspend fun FirebaseFirestore.loadPlayerIdsByMatch(
+    matchId: String
+): List<String> = suspendCoroutine { continuation ->
+    getMatchesCollection()
+        .document(matchId)
+        .get()
+        .addOnSuccessListener { doc ->
+            doc.data?.let { data ->
+                Log.i(TAG, "loadPlayerIds: ${data["players"]}")
+                val playersField = data["players"] as? List<*>
+                if (playersField != null) {
+                    continuation.resume(playersField.filterIsInstance<String>())
+                } else {
+                    continuation.resume(emptyList())
+                }
+            } ?: run {
+                continuation.resume(emptyList())
+            }
+        }.addOnFailureListener { e ->
+            Log.e(TAG, "loadPlayerIds: ", e)
+            continuation.resume(emptyList())
+        }
+}
+
+suspend fun FirebaseFirestore.getClubIdOfMatch(
+    matchId: String
+): String? = suspendCoroutine { continuation ->
+    getMatchesCollection()
+        .document(matchId)
+        .get()
+        .addOnSuccessListener { doc ->
+            continuation.resume(doc.data?.get("clubId")?.toString())
+        }.addOnFailureListener { e ->
+            Log.e(TAG, "getJoinEnabled: ", e)
+            continuation.resume(null)
+        }
+}
+
+suspend fun FirebaseFirestore.getPlayerIdOfUserInClub(
+    clubId: String,
+    userId: String
+): String? = suspendCoroutine { conti ->
+    getPlayersCollection()
+        .whereEqualTo("clubId", clubId)
+        .whereEqualTo("userId", userId)
+        .get()
+        .addOnSuccessListener { docs ->
+            if (docs.isEmpty) {
+                conti.resume(null)
+            } else {
+                conti.resume(docs.first().id)
+            }
+        }.addOnFailureListener { e ->
+            Log.e(TAG, "getJoinEnabled: ", e)
+            conti.resume(null)
+        }
+}
+
+suspend fun FirebaseFirestore.getPlayersByIds(
+    playerIds: List<String>
+): List<Player> = suspendCoroutine { continuation ->
+    getPlayersCollection()
+        .whereIn(FieldPath.documentId(), playerIds)
+        .get()
+        .addOnSuccessListener { docs ->
+            continuation.resume(docs.map { it.toPlayer() })
+        }.addOnFailureListener { e ->
+            Log.e(TAG, "getPlayersByIds: ", e)
+            continuation.resume(emptyList())
+        }
+}
