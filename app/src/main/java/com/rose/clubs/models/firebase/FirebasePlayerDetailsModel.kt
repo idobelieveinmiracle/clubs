@@ -45,4 +45,30 @@ class FirebasePlayerDetailsModel(
         val player = firestore.getPlayerInfoOfUserInClub(clubId, user.userId) ?: return Role.MEMBER
         return player.role
     }
+
+    override suspend fun addBalance(playerId: String, delta: Int): Boolean {
+        val player: Player = suspendCoroutine { continuation ->
+            firestore.getPlayersCollection()
+                .document(playerId)
+                .get()
+                .addOnSuccessListener { doc ->
+                    continuation.resume(doc.toPlayer())
+                }.addOnFailureListener { e ->
+                    Log.e(TAG, "getPlayerInfo: ", e)
+                    continuation.resume(null)
+                }
+        } ?: return false
+
+        return suspendCoroutine { continuation ->
+            firestore.getPlayersCollection()
+                .document(playerId)
+                .update("balance", player.balance + delta)
+                .addOnCompleteListener { result ->
+                    if (!result.isSuccessful) {
+                        Log.e(TAG, "addBalance: ", result.exception)
+                    }
+                    continuation.resume(result.isSuccessful)
+                }
+        }
+    }
 }

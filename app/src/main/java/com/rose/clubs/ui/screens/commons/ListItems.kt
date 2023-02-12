@@ -64,9 +64,9 @@ fun PlayerCard(player: Player, onClick: () -> Unit) {
         shape = RoundedCornerShape(8.dp),
         elevation = 2.dp,
         modifier = Modifier
-            .clickable { onClick() }
             .padding(bottom = 10.dp)
             .fillMaxWidth()
+            .clickable { onClick() }
     ) {
         Row {
             AsyncImage(

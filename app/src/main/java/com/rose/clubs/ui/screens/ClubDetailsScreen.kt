@@ -82,7 +82,11 @@ fun ClubDetailsScreen(
             Log.i(TAG, "ClubDetailsScreen: reload state changed $map")
             if (map.getOrDefault("club_details:matches", false)) {
                 viewModel.reloadMatches()
-                mainViewModel.markReloaded("club_details")
+                mainViewModel.markReloaded("club_details:matches")
+            }
+            if (map.getOrDefault("club_details:players", false)) {
+                viewModel.reloadPlayers()
+                mainViewModel.markReloaded("club_details:players")
             }
         }
     }
@@ -239,9 +243,9 @@ private fun MatchCard(
         shape = RoundedCornerShape(8.dp),
         elevation = 2.dp,
         modifier = Modifier
-            .clickable { onSelected() }
             .padding(bottom = 10.dp)
             .fillMaxWidth()
+            .clickable { onSelected() }
     ) {
         Column(
             modifier = Modifier

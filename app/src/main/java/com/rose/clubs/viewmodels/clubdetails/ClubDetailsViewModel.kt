@@ -51,7 +51,7 @@ class ClubDetailsViewModel(
         }
     }
 
-    private fun reloadPlayers() {
+    fun reloadPlayers() {
         viewModelScope.launch {
             val loadedPlayers = clubDetailsModel.loadPlayers(club.value!!.clubId)
             _players.value = loadedPlayers

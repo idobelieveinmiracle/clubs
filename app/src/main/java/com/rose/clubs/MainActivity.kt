@@ -85,7 +85,11 @@ fun ClubApplication() {
             type = NavType.StringType
         })) { navEntry ->
             val clubId = navEntry.arguments?.getString("club_id") ?: ""
-            AddMatchScreen(navController = navController, clubId = clubId, mainViewModel = viewModel)
+            AddMatchScreen(
+                navController = navController,
+                clubId = clubId,
+                mainViewModel = viewModel
+            )
         }
         composable("notifications/club/{club_id}", listOf(navArgument("club_id") {
             type = NavType.StringType
@@ -106,7 +110,11 @@ fun ClubApplication() {
             type = NavType.StringType
         })) { navEntry ->
             val playerId = navEntry.arguments?.getString("player_id") ?: ""
-            PlayerDetailsScreen(navController = navController, playerId = playerId)
+            PlayerDetailsScreen(
+                navController = navController,
+                playerId = playerId,
+                mainViewModel = viewModel
+            )
         }
         composable("loading") {
             LoadingUserInfoScreen()
