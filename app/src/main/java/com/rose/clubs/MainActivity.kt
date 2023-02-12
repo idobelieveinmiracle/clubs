@@ -102,6 +102,12 @@ fun ClubApplication() {
             val matchId = navEntry.arguments?.getString("match_id") ?: ""
             MatchDetails(navController = navController, matchId = matchId)
         }
+        composable("player_details/{player_id}", listOf(navArgument("player_id") {
+            type = NavType.StringType
+        })) { navEntry ->
+            val playerId = navEntry.arguments?.getString("player_id") ?: ""
+            PlayerDetailsScreen(navController = navController, playerId = playerId)
+        }
         composable("loading") {
             LoadingUserInfoScreen()
         }

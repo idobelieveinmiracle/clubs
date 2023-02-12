@@ -59,11 +59,12 @@ fun ClubItem(club: Club, onClick: () -> Unit) {
 }
 
 @Composable
-fun PlayerCard(player: Player) {
+fun PlayerCard(player: Player, onClick: () -> Unit) {
     Card(
         shape = RoundedCornerShape(8.dp),
         elevation = 2.dp,
         modifier = Modifier
+            .clickable { onClick() }
             .padding(bottom = 10.dp)
             .fillMaxWidth()
     ) {

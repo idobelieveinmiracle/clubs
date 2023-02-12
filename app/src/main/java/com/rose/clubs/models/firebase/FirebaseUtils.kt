@@ -83,6 +83,33 @@ fun DocumentSnapshot.toClub(): Club {
     )
 }
 
+fun DocumentSnapshot.toPlayer(
+    club: Club = Club(
+        clubId = data?.get("clubId")?.toString() ?: "",
+        name = "",
+        avatarUrl = ""
+    ),
+    user: User = User(
+        userId = data?.get("userId")?.toString() ?: "",
+        email = "",
+        displayName = "",
+        avatarUrl = ""
+    )
+): Player {
+    return Player(
+        playerId = id,
+        user = user,
+        club = club,
+        number = Integer.parseInt(data?.get("number")?.toString() ?: "0"),
+        balance = Integer.parseInt(data?.get("balance")?.toString() ?: "0"),
+        role = Role.fromValue(
+            Integer.parseInt(
+                data?.get("role")?.toString() ?: "3"
+            )
+        ),
+    )
+}
+
 suspend fun FirebaseFirestore.loadClub(clubId: String): Club? = suspendCoroutine { continuation ->
     getClubsCollection()
         .document(clubId)
@@ -262,6 +289,26 @@ suspend fun FirebaseFirestore.getPlayerIdOfUserInClub(
                 conti.resume(null)
             } else {
                 conti.resume(docs.first().id)
+            }
+        }.addOnFailureListener { e ->
+            Log.e(TAG, "getJoinEnabled: ", e)
+            conti.resume(null)
+        }
+}
+
+suspend fun FirebaseFirestore.getPlayerInfoOfUserInClub(
+    clubId: String,
+    userId: String
+): Player? = suspendCoroutine { conti ->
+    getPlayersCollection()
+        .whereEqualTo("clubId", clubId)
+        .whereEqualTo("userId", userId)
+        .get()
+        .addOnSuccessListener { docs ->
+            if (docs.isEmpty) {
+                conti.resume(null)
+            } else {
+                conti.resume(docs.first().toPlayer())
             }
         }.addOnFailureListener { e ->
             Log.e(TAG, "getJoinEnabled: ", e)

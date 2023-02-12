@@ -67,7 +67,9 @@ fun MatchDetails(
             modifier = Modifier.padding(scaffoldPadding),
             match = match,
             players = players
-        )
+        ) { playerId ->
+            navController?.navigate("player_details/$playerId")
+        }
     }
 }
 
@@ -75,7 +77,8 @@ fun MatchDetails(
 private fun MatchDetailView(
     modifier: Modifier,
     match: Match?,
-    players: List<Player>
+    players: List<Player>,
+    onSelectPlayer: (playerId: String) -> Unit
 ) {
     Surface(modifier = modifier.fillMaxSize()) {
         Column {
@@ -105,7 +108,9 @@ private fun MatchDetailView(
             )
             LazyColumn(contentPadding = PaddingValues(16.dp)) {
                 items(players) {
-                    PlayerCard(player = it)
+                    PlayerCard(player = it) {
+                        onSelectPlayer(it.playerId)
+                    }
                 }
             }
         }
@@ -128,5 +133,7 @@ fun MatchDetailsPreview() {
                 100
             )
         )
-    )
+    ) {
+
+    }
 }

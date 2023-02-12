@@ -139,7 +139,7 @@ fun ClubDetailsScreen(
             club = club,
             players = players,
             matches = matches,
-            onPlayerSelected = { playerId ->  },
+            onPlayerSelected = { playerId -> navController?.navigate("player_details/$playerId") },
             onMatchSelected = { matchId -> navController?.navigate("match_details/$matchId") }
         )
     }
@@ -201,7 +201,9 @@ private fun ClubDetailsView(
             }
             item { Spacer(modifier = Modifier.height(7.dp)) }
             items(players) { player ->
-                PlayerCard(player = player)
+                PlayerCard(player = player) {
+                    onPlayerSelected(player.playerId)
+                }
             }
 
             item {
