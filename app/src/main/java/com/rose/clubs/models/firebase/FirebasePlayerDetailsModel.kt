@@ -9,6 +9,9 @@ import com.google.firebase.ktx.Firebase
 import com.rose.clubs.data.Player
 import com.rose.clubs.data.Role
 import com.rose.clubs.viewmodels.playerdetails.PlayerDetailModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.withContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -18,7 +21,9 @@ class FirebasePlayerDetailsModel(
     private val auth: FirebaseAuth = Firebase.auth,
     private val firestore: FirebaseFirestore = Firebase.firestore
 ) : PlayerDetailModel {
-    override suspend fun getPlayerInfo(playerId: String): Player? {
+    override suspend fun getPlayerInfo(
+        playerId: String
+    ): Player? = withContext(Dispatchers.IO) {
         val player: Player = suspendCoroutine { continuation ->
             firestore.getPlayersCollection()
                 .document(playerId)
@@ -29,11 +34,16 @@ class FirebasePlayerDetailsModel(
                     Log.e(TAG, "getPlayerInfo: ", e)
                     continuation.resume(null)
                 }
-        } ?: return null
+        } ?: return@withContext null
 
-        val userMap = firestore.loadUsersMap(listOf(player))
+        val userMap = async { firestore.loadUsersMap(listOf(player)) }
 
-        return player.copy(user = userMap.getOrDefault(player.user.userId, player.user))
+        val playerCost = async { firestore.getPlayersCostInClub(playerId) }
+
+        player.copy(
+            user = userMap.await().getOrDefault(player.user.userId, player.user),
+            balance = player.balance - playerCost.await()
+        )
     }
 
     override suspend fun getViewerRole(clubId: String): Role {

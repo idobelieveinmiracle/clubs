@@ -209,12 +209,14 @@ suspend fun FirebaseFirestore.saveMatch(
     match: Match
 ): SaveMatchResult = suspendCoroutine { continuation ->
     getMatchesCollection()
-        .add(hashMapOf(
-            "clubId" to clubId,
-            "location" to match.location,
-            "time" to match.time,
-            "cost" to match.cost
-        )).addOnCompleteListener { res ->
+        .add(
+            hashMapOf(
+                "clubId" to clubId,
+                "location" to match.location,
+                "time" to match.time,
+                "cost" to match.cost
+            )
+        ).addOnCompleteListener { res ->
             if (res.isSuccessful) {
                 continuation.resume(SaveMatchResult.Success)
             } else {
@@ -327,5 +329,33 @@ suspend fun FirebaseFirestore.getPlayersByIds(
         }.addOnFailureListener { e ->
             Log.e(TAG, "getPlayersByIds: ", e)
             continuation.resume(emptyList())
+        }
+}
+
+suspend fun FirebaseFirestore.getPlayersCostInClub(
+    playerId: String
+): Int = suspendCoroutine { continuation ->
+    getMatchesCollection()
+        .whereArrayContains("players", playerId)
+        .get()
+        .addOnSuccessListener { docs ->
+            val currentTime = System.currentTimeMillis()
+            val playerCost = docs.filter {
+                (it.data["time"]?.toString()?.toLong() ?: Long.MAX_VALUE) < currentTime
+            }.sumOf {
+                val cost = it.data["cost"]?.toString()?.toInt() ?: 0
+                val playersField = it.data["players"] as? List<*>
+                val playersCount = playersField?.filterIsInstance<String>()
+                    ?.filter { id -> id.isNotEmpty() }?.size ?: 1
+                if (playersCount > 0) {
+                    cost / playersCount
+                } else {
+                    cost
+                }
+            }
+            continuation.resume(playerCost)
+        }.addOnFailureListener { e ->
+            Log.e(TAG, "getPlayersCostInClub: ", e)
+            continuation.resume(0)
         }
 }
