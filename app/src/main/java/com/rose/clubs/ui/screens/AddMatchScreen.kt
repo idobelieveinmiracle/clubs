@@ -3,6 +3,7 @@ package com.rose.clubs.ui.screens
 import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -27,15 +28,19 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.rose.clubs.models.firebase.FirebaseAddMatchModel
 import com.rose.clubs.viewmodels.addmatch.AddMatchViewModel
+import com.rose.clubs.viewmodels.main.MainViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
+private const val TAG = "AddMatchScreen"
+
 @Composable
 fun AddMatchScreen(
     navController: NavController?,
-    clubId: String
+    clubId: String,
+    mainViewModel: MainViewModel
 ) {
     val viewModel: AddMatchViewModel = viewModel(
         factory = AddMatchViewModel.Factory(
@@ -45,20 +50,23 @@ fun AddMatchScreen(
     )
 
     val loading by viewModel.loading.collectAsState()
-    val saved by viewModel.saved.collectAsState()
 
     val hostState = remember { SnackbarHostState() }
-
-    if (saved) {
-        // TODO: Load matches again here using a state loader through the whole NavHost
-        navController?.navigateUp()
-    }
 
     LaunchedEffect(key1 = Unit) {
         launch {
             viewModel.message.collectLatest {
                 if (it.isNotEmpty()) {
                     hostState.showSnackbar(it)
+                }
+            }
+        }
+        launch {
+            viewModel.saved.collectLatest {
+                if (it) {
+                    mainViewModel.triggerReload("club_details")
+                    Log.i(TAG, "AddMatchScreen: saved")
+                    navController?.navigateUp()
                 }
             }
         }

@@ -25,10 +25,11 @@ import com.rose.clubs.data.Player
 import com.rose.clubs.models.firebase.FirebaseClubDetailsModel
 import com.rose.clubs.ui.screens.commons.AppTopBar
 import com.rose.clubs.ui.screens.commons.PlayerCard
+import com.rose.clubs.ui.screens.commons.asyncCollect
 import com.rose.clubs.viewmodels.clubdetails.ActionType
 import com.rose.clubs.viewmodels.clubdetails.ClubDetailsViewModel
 import com.rose.clubs.viewmodels.clublist.ClubsListViewModel
-import kotlinx.coroutines.flow.collectLatest
+import com.rose.clubs.viewmodels.main.MainViewModel
 import kotlinx.coroutines.launch
 
 private const val TAG = "ClubDetailsScreen"
@@ -37,7 +38,8 @@ private const val TAG = "ClubDetailsScreen"
 fun ClubDetailsScreen(
     navController: NavController?,
     clubId: String,
-    clubsListViewModel: ClubsListViewModel
+    clubsListViewModel: ClubsListViewModel,
+    mainViewModel: MainViewModel
 ) {
     val viewModel: ClubDetailsViewModel = viewModel(
         factory = ClubDetailsViewModel.Factory(
@@ -53,19 +55,27 @@ fun ClubDetailsScreen(
     val hostState = remember { SnackbarHostState() }
 
     LaunchedEffect(key1 = Unit) {
-        launch {
-            viewModel.errorMessage.collectLatest { error ->
-                if (error.isNotEmpty()) {
+        viewModel.errorMessage.asyncCollect(this) { error ->
+            if (error.isNotEmpty()) {
+                launch {
                     hostState.showSnackbar(error)
                 }
             }
         }
-        launch {
-            viewModel.reloadClubs.collectLatest { shouldReload ->
-                Log.i(TAG, "ClubDetailsScreen: reload clubs $shouldReload")
-                if (shouldReload) {
-                    clubsListViewModel.reloadMyClubs()
-                }
+
+        viewModel.reloadClubs.asyncCollect(this) { shouldReload ->
+            Log.i(TAG, "ClubDetailsScreen: reload clubs $shouldReload")
+            if (shouldReload) {
+                clubsListViewModel.reloadMyClubs()
+            }
+        }
+
+        Log.i(TAG, "ClubDetailsScreen: init reload state ${mainViewModel.reloadMap}")
+        mainViewModel.reloadMap.asyncCollect(this) { map ->
+            Log.i(TAG, "ClubDetailsScreen: reload state changed $map")
+            if (map.getOrDefault("club_details", false)) {
+                clubsListViewModel.reloadMyClubs()
+                mainViewModel.markReloaded("club_details")
             }
         }
     }

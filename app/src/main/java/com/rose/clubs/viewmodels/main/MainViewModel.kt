@@ -14,9 +14,11 @@ private const val TAG = "MainViewModel"
 class MainViewModel(private val userModel: UserModel) : ViewModel() {
     private val _user: MutableStateFlow<User?> = MutableStateFlow(null)
     private val _loadingUserInfo: MutableStateFlow<Boolean> = MutableStateFlow(true)
+    private val _reloadMap: MutableStateFlow<MutableMap<String, Boolean>> = MutableStateFlow(hashMapOf())
 
     val user: StateFlow<User?> get() = _user
     val loadingUserInfo: StateFlow<Boolean> get() = _loadingUserInfo
+    val reloadMap: StateFlow<MutableMap<String, Boolean>> = _reloadMap
 
     init {
         reloadUser()
@@ -35,6 +37,18 @@ class MainViewModel(private val userModel: UserModel) : ViewModel() {
         viewModelScope.launch {
             userModel.logout()
             _user.value = null
+        }
+    }
+
+    fun triggerReload(key: String) {
+        _reloadMap.value = reloadMap.value.apply {
+            put(key, true)
+        }
+    }
+
+    fun markReloaded(key: String) {
+        _reloadMap.value = reloadMap.value.apply {
+            put(key, false)
         }
     }
 
