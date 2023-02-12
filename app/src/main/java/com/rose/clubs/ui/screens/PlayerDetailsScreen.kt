@@ -33,6 +33,8 @@ import com.rose.clubs.ui.screens.commons.AppTopBar
 import com.rose.clubs.ui.screens.commons.asyncCollect
 import com.rose.clubs.viewmodels.main.MainViewModel
 import com.rose.clubs.viewmodels.playerdetails.PlayerDetailsViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun PlayerDetailsScreen(
@@ -47,10 +49,24 @@ fun PlayerDetailsScreen(
     val player by viewModel.player.collectAsState()
     val viewerRole by viewModel.viewerRole.collectAsState()
 
+    val hostState = remember { SnackbarHostState() }
+
     LaunchedEffect(key1 = Unit) {
         viewModel.balanceUpdated.asyncCollect(this) { time ->
             if (time > 0 && (navController?.backQueue?.size ?: 0) > 1) {
                 mainViewModel.triggerReload("club_details:players")
+            }
+        }
+        viewModel.playerOut.asyncCollect(this) { isOut ->
+            if (isOut) {
+                launch {
+                    launch {
+                        hostState.showSnackbar("Kicked player")
+                    }
+                    delay(300)
+                    mainViewModel.triggerReload("club_details:players")
+                    navController?.navigateUp()
+                }
             }
         }
     }
@@ -74,6 +90,9 @@ fun PlayerDetailsScreen(
                 navController?.navigateUp()
             }
         },
+        snackbarHost = {
+            SnackbarHost(hostState = hostState)
+        }
     ) { scaffoldPadding ->
         PlayerDetailsView(
             modifier = Modifier
@@ -81,7 +100,8 @@ fun PlayerDetailsScreen(
                 .padding(scaffoldPadding),
             player = player,
             viewerRole = viewerRole,
-            onEditBalance = { showBalanceDialog = true }
+            onEditBalance = { showBalanceDialog = true },
+            onKickPlayer = { viewModel.kickPlayer() }
         )
     }
 }
@@ -91,7 +111,8 @@ fun PlayerDetailsView(
     modifier: Modifier,
     player: Player?,
     viewerRole: Role,
-    onEditBalance: () -> Unit
+    onEditBalance: () -> Unit,
+    onKickPlayer: () -> Unit
 ) {
     Surface(modifier) {
         Column(
@@ -140,19 +161,21 @@ fun PlayerDetailsView(
 
             if (viewerRole in arrayOf(Role.CAPTAIN, Role.SUB_CAPTAIN)) {
                 Row(Modifier.align(Alignment.CenterHorizontally)) {
-                    Button(
-                        onClick = { },
-                        colors = ButtonDefaults.buttonColors(
-                            backgroundColor = Color(0xFF913175)
-                        )
-                    ) {
-                        Row {
-                            Icon(imageVector = Icons.Filled.Close, contentDescription = null)
-                            Spacer(modifier = Modifier.width(5.dp))
-                            Text(text = "Kick")
+                    if (player?.role !in arrayOf(Role.CAPTAIN, Role.SUB_CAPTAIN)) {
+                        Button(
+                            onClick = { onKickPlayer() },
+                            colors = ButtonDefaults.buttonColors(
+                                backgroundColor = Color(0xFF913175)
+                            )
+                        ) {
+                            Row {
+                                Icon(imageVector = Icons.Filled.Close, contentDescription = null)
+                                Spacer(modifier = Modifier.width(5.dp))
+                                Text(text = "Kick")
+                            }
                         }
+                        Spacer(modifier = Modifier.width(30.dp))
                     }
-                    Spacer(modifier = Modifier.width(30.dp))
                     Button(
                         onClick = { onEditBalance() },
                         colors = ButtonDefaults.buttonColors(
@@ -231,7 +254,8 @@ fun PlayerDetailsPreview() {
         modifier = Modifier.fillMaxSize(),
         player = null,
         viewerRole = Role.CAPTAIN,
-        onEditBalance = {}
+        onEditBalance = {},
+        onKickPlayer = {}
     )
 }
 

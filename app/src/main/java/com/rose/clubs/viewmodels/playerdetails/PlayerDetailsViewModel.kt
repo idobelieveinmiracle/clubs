@@ -17,10 +17,12 @@ class PlayerDetailsViewModel(
     private val _player = MutableStateFlow<Player?>(null)
     private val _viewerRole = MutableStateFlow(Role.MEMBER)
     private val _balanceUpdated = MutableStateFlow(-1L)
+    private val _playerOut = MutableStateFlow(false)
 
     val player: StateFlow<Player?> get() = _player
     val viewerRole: StateFlow<Role> get() = _viewerRole
     val balanceUpdated: SharedFlow<Long> get() = _balanceUpdated
+    val playerOut: StateFlow<Boolean> get() = _playerOut
 
     init {
         viewModelScope.launch {
@@ -37,6 +39,12 @@ class PlayerDetailsViewModel(
                 _balanceUpdated.value = System.currentTimeMillis()
                 _player.value = model.getPlayerInfo(playerId)
             }
+        }
+    }
+
+    fun kickPlayer() {
+        viewModelScope.launch {
+            _playerOut.value = model.kickPlayer(playerId)
         }
     }
 

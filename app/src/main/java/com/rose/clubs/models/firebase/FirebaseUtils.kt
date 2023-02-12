@@ -344,6 +344,7 @@ suspend fun FirebaseFirestore.getPlayersCostInClub(
                 (it.data["time"]?.toString()?.toLong() ?: Long.MAX_VALUE) < currentTime
             }.sumOf {
                 val cost = it.data["cost"]?.toString()?.toInt() ?: 0
+                Log.i(TAG, "getPlayersCostInClub: cost $cost")
                 val playersField = it.data["players"] as? List<*>
                 val playersCount = playersField?.filterIsInstance<String>()
                     ?.filter { id -> id.isNotEmpty() }?.size ?: 1
@@ -353,9 +354,49 @@ suspend fun FirebaseFirestore.getPlayersCostInClub(
                     cost
                 }
             }
+            Log.i(TAG, "getPlayersCostInClub: $playerCost ${docs.size()}")
             continuation.resume(playerCost)
         }.addOnFailureListener { e ->
             Log.e(TAG, "getPlayersCostInClub: ", e)
             continuation.resume(0)
+        }
+}
+
+suspend fun FirebaseFirestore.getPlayerSkipCostPerMatches(
+    playerId: String
+): List<Pair<String, Int>> = suspendCoroutine { continuation ->
+    getMatchesCollection()
+        .whereArrayContains("players", playerId)
+        .get()
+        .addOnSuccessListener { docs ->
+            continuation.resume(docs.map { doc ->
+                val cost = doc.data["cost"]?.toString()?.toInt() ?: 0
+                val playersField = doc.data["players"] as? List<*>
+                val playersCount = playersField?.filterIsInstance<String>()
+                    ?.filter { id -> id.isNotEmpty() }?.size ?: 1
+                if (playersCount > 0) {
+                    Pair(doc.id, cost - (cost / playersCount))
+                } else {
+                    Pair(doc.id, 0)
+                }
+            })
+        }.addOnFailureListener { e ->
+            Log.e(TAG, "getPlayerCostPerMatches: ", e)
+            continuation.resume(emptyList())
+        }
+}
+
+suspend fun FirebaseFirestore.updateMatchCost(
+    matchId: String,
+    newCost: Int
+): Unit = suspendCoroutine { continuation ->
+    getMatchesCollection()
+        .document(matchId)
+        .update("cost", newCost)
+        .addOnCompleteListener { result ->
+            if (!result.isSuccessful) {
+                Log.e(TAG, "updateMatchCost: ", result.exception)
+            }
+            continuation.resume(Unit)
         }
 }
